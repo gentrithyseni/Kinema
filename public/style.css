@@ -412,7 +412,7 @@ header .logo {
     cursor: pointer; transition: 0.2s; font-size: 10px; display: flex;
     align-items: center; justify-content: center;
 }
-.seat.occupied { background: #ff1a1a !important; color: white; cursor: not-allowed; }
+.seat.occupied { background: #ff1a1a !important; color: red; cursor: not-allowed; }
 .seat.selected { background: #ffd400 !important; color: #111; }
 .seat.vip { border: 2px solid #ffd700; color: #ffd700; font-weight: 600; }
 .seat:hover:not(.occupied) { transform: scale(1.2); background: #666; }

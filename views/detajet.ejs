@@ -182,7 +182,7 @@
                 : {};
 
             function renderOccupied(shfaqjaId) {
-                const seats = document.querySelectorAll('.seats-container .seat');
+                const seats = document.querySelectorAll('.row .seat');
                 seats.forEach(s => {
                     s.classList.remove('occupied');
                     s.classList.remove('selected');
@@ -222,7 +222,7 @@
                 });
             }
 
-            document.querySelectorAll('.seats-container .seat').forEach(el => {
+            document.querySelectorAll('.row .seat').forEach(el => {
                 el.addEventListener('click', () => {
                     if (el.classList.contains('occupied')) return;
                     const row = el.dataset.row;
