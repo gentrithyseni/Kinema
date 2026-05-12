@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kinema AAB - Biletat Tuaja</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+    <header>
+        <a href="/" class="logo">KINEMA AAB</a>
+        <div class="nav-links">
+            <a href="/kategorite"> Kategoritë</a>
+            <a href="/about">ℹ️ Si funksionon</a>
+            <a href="/upcoming" class="btn-primary">⭐Se Shpejti</a>
+            <form action="/search" method="GET" class="top-search">
+                <input type="search" name="q" placeholder="Kërko filma...">
+            </form>
+            <a href="/sallat">🎬 Sallat</a>
+            
+            <% if (user) { %>
+                <span>Përshëndetje, <b><%= user.Emri %></b></span>
+                <a href="/my-reservations">🎟 Rezervimet e mia</a>
+                
+                <% if (user.Roli === 'Admin') { %>
+                    <a href="/admin" style="color: #ffc107;">⚙️ Admin</a>
+                <% } %>
+                
+                <a href="/logout" class="btn-primary">Dil</a>
+            <% } else { %>
+                <a href="/login" class="btn-primary">Kyçu / Regjistrohu</a>
+            <% } %>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2 class="title-section">🎬 Shfaqjet e Sotme</h2>
+        <% if (typeof todaysShows !== 'undefined' && todaysShows.length > 0) { %>
+            <div class="shows-list">
+                <% todaysShows.forEach(function(s) { %>
+                    <div class="show-item">
+                        <img src="<%= s.PosterURL ? s.PosterURL : 'https://via.placeholder.com/80x120/2a2d34/ffffff?text=Poster' %>" alt="<%= s.Titulli %>" style="width:80px; height:120px; object-fit:cover; margin-right:12px;">
+                        <div>
+                            <h4><a href="/filmi/<%= s.Filmi_ID %>"><%= s.Titulli %></a></h4>
+                            <p><%= new Date(s.Data_Ora).toLocaleTimeString('sq-AL', { hour: '2-digit', minute: '2-digit', hour12: false }) %> — <%= s.Emri_Salles %></p>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <p>Nuk ka shfaqje të planifikuara për sot.</p>
+        <% } %>
+    </div>
+
+    <div class="container">
+        <h2 class="title-section">Filmat qe ndodhet ne homepage</h2>
+        <% const displayFilms = (currentFilms && currentFilms.length > 0) ? currentFilms : (filmat && filmat.length > 0 ? filmat : []); %>
+        <% if (displayFilms.length > 0) { %>
+        <div class="movie-grid">
+            <% displayFilms.forEach(function(filmi) { %>
+                <div class="movie-card">
+                    <img src="<%= filmi.PosterURL ? filmi.PosterURL : 'https://via.placeholder.com/220x330/2a2d34/ffffff?text=Pa+Poster' %>" alt="<%= filmi.Titulli %>" class="movie-poster">
+                    
+                    <div class="movie-info">
+                        <h3><%= filmi.Titulli %></h3>
+                        <p><%= filmi.Zhanri %> | <%= filmi.Kohezgjatja_Min %> Min</p>
+                        <a href="/filmi/<%= filmi.ID %>" class="btn-rezervo">Shiko Oraret</a>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+        <% } else { %>
+            <p style="color:#a0a0a0;">Nuk ka filma me shfaqje aktualë.</p>
+        <% } %>
+    </div>
+
+</body>
+</html>

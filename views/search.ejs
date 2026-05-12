@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <link rel="stylesheet" href="/style.css">
+    <title>Kërko - Kinema AAB</title>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">KINEMA AAB</a>
+        <div class="nav-links"><a href="/">Kthehu te Filmat</a></div>
+    </header>
+
+    <div class="container">
+        <h2 class="title-section">Rezultatet e Kërkimit për "<%= q %>"</h2>
+        <% if (filmat && filmat.length > 0) { %>
+            <div class="movie-grid">
+                <% filmat.forEach(f => { %>
+                    <div class="movie-card">
+                        <img src="<%= f.PosterURL ? f.PosterURL : 'https://via.placeholder.com/220x330/2a2d34/ffffff?text=Pa+Poster' %>" alt="<%= f.Titulli %>" class="movie-poster">
+                        <div class="movie-info">
+                            <h3><%= f.Titulli %></h3>
+                            <p><%= f.Zhanri %> | <%= f.Kohezgjatja_Min %> Min</p>
+                            <a href="/filmi/<%= f.ID %>" class="btn-rezervo">Shiko Oraret</a>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } else { %>
+            <p>Nuk u gjet asnjë film me këtë fjalë.</p>
+        <% } %>
+    </div>
+</body>
+</html>

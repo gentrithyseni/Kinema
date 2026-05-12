@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <link rel="stylesheet" href="/style.css">
+    <title>Upcoming - Kinema AAB</title>
+    <style>
+        .upcoming-container { max-width: 1000px; margin: 40px auto; padding: 20px; }
+        .grid { display:grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap:16px; }
+        .card { background:#1a1d24; padding:12px; border-radius:8px; border:1px solid #2b2f36; }
+        .card img { width:100%; height:140px; object-fit:cover; border-radius:6px; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">Kinema AAB</a>
+        <div class="nav-links"><a href="/kategorite">Kategoritë</a></div>
+    </header>
+
+    <div class="upcoming-container">
+        <h1 style="color:#e50914;">Se shpejti në Kinema</h1>
+        <p>Filmat që do dalin në muajt e ardhshëm</p>
+        <div class="grid">
+            <% filmat.forEach(function(f){ %>
+                <div class="card">
+                    <img src="<%= f.PosterURL || '/placeholder.png' %>" alt="<%= f.Titulli %>" />
+                    <h3 style="color:#ffc107;"><%= f.Titulli %></h3>
+                    <p style="color:#a0a0a0;"><%= f.Zhanri %> • <%= f.Kohezgjatja_Min %> min</p>
+                    <% if (f.Premiere_Date) { %>
+                        <p style="color:#4CAF50; font-weight:bold; margin:8px 0;">📅 <%= new Date(f.Premiere_Date).toLocaleString('sq-AL', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+                    <% } %>
+                    <a href="/filmi/<%= f.ID %>">Shiko detajet</a>
+                </div>
+            <% }) %>
+        </div>
+    </div>
+</body>
+</html>

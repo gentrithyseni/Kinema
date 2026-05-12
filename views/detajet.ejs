@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <link rel="stylesheet" href="/style.css">
+    <title><%= filmi.Titulli %> - Detajet</title>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">Kinema AAB</a>
+        <div class="nav-links">
+            <a href="/kategorite">📂 Kategoritë</a>
+            <a href="/about">ℹ️ Si funksionon</a>
+            <form action="/search" method="GET" style="display:inline-block; margin-left:10px;">
+                <input type="search" name="q" placeholder="Kërko filma..." style="padding:6px; border-radius:4px;">
+                <button type="submit" style="padding:6px 8px; margin-left:4px;">🔍</button>
+            </form>
+            <a href="/sallat">🎬 Sallat</a>
+            <% if(user) { %>
+                <a href="/my-reservations">🎟 Rezervimet e mia</a>
+            <% } %>
+            <a href="/">Kthehu te Filmat</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div style="display: flex; gap: 40px; margin-bottom: 50px;">
+            <img src="<%= filmi.PosterURL %>" style="width:300px; border-radius:10px; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+            <div>
+                <h1 style="font-size: 40px; color: #e50914;"><%= filmi.Titulli %></h1>
+                <p style="color: #a0a0a0; margin: 10px 0;"><%= filmi.Zhanri %> | <%= filmi.Kohezgjatja_Min %> minuta</p>
+                <p style="line-height: 1.6;"><%= filmi.Pershkrimi %></p>
+            </div>
+        </div>
+
+        <h2 class="title-section">Zgjidhni Shfaqjen dhe Ulëset</h2>
+        
+        <% if(shfaqjet.length > 0) { %>
+            <div style="background: #181b22; padding: 20px; border-radius: 10px; margin-bottom: 30px;">
+                <label>Zgjidhni terminin:</label>
+                <select id="terminiSelect" style="padding: 10px; background: #0f1115; color: white; border: 1px solid #e50914; border-radius: 5px;">
+                    <% shfaqjet.forEach(s => { %>
+                        <option value="<%= s.Shfaqja_ID %>" data-salla="<%= (s.Emri_Salles || '').replace(/\"/g, '&quot;') %>">
+                            <%= new Date(s.Data_Ora).toLocaleString('sq-AL', { hour12: false }) %> - <%= s.Emri_Salles %>
+                        </option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="seats-container">
+                <div class="screen">EKRANI</div>
+                
+                <% ['A', 'B', 'C', 'D', 'E'].forEach(row => { %>
+                    <div class="row">
+                        <span style="width: 20px;"><%= row %></span>
+                        <% for(let i=1; i<=12; i++) { %>
+                            <div class="seat <%= row === 'E' ? 'vip' : '' %>" data-row="<%= row %>" data-num="<%= i %>">
+                                <%= row === 'E' ? 'V' : i %>
+                            </div>
+                        <% } %>
+                    </div>
+                <% }) %>
+
+                <div class="legend">
+                    <div class="legend-item"><div class="seat"></div> E lirë</div>
+                    <div class="legend-item"><div class="seat occupied"></div> E zënë</div>
+                    <div class="legend-item"><div class="seat selected"></div> E zgjedhur</div>
+                    <div class="legend-item"><div class="seat vip">V</div> VIP</div>
+                </div>
+
+                <div style="margin-top: 15px; color: #a0a0a0; font-size: 14px; text-align: center;">
+                    Rreshti <strong style="color:#ffd700;">E</strong> është VIP dhe ka çmim më të lartë.
+                </div>
+
+                <div id="seatStatusMessage" style="color: #e50914; margin-bottom: 10px;"></div>
+                
+                <div id="priceDisplay" style="background: #0f1115; border: 2px solid #e50914; border-radius: 8px; padding: 20px; margin-top: 20px; text-align: center; margin-bottom: 20px;">
+                    <p style="color: #a0a0a0; margin: 0 0 10px 0; font-size: 14px;">Ulëset e zgjedhura:</p>
+                    <p id="selectedSeatsDisplay" style="color: #ffc107; font-size: 18px; margin: 0 0 10px 0; font-weight: 600;">Zgjidh ulëset</p>
+                    <p style="color: #a0a0a0; margin: 0 0 10px 0; font-size: 14px;">Çmim për ulëse:</p>
+                    <p id="pricePerSeatInfo" style="color: #cfcfcf; margin: 0 0 8px 0; font-size: 14px;">Regular: 5,50 € | VIP: 7,50 €</p>
+                    <p style="color: #4CAF50; font-size: 28px; margin: 0; font-weight: bold;" id="totalPrice">0,00 €</p>
+                </div>
+                
+                <div id="reservedMapData" data-json="<%= encodeURIComponent(JSON.stringify(reservedMap || {})) %>" style="display:none;"></div>
+                <form action="/rezervo" method="POST" style="margin-top: 30px; width: 100%;">
+                    <input type="hidden" name="shfaqja_id" id="shfaqja_id_input">
+                    <input type="hidden" name="uleset" id="selected_seats_input">
+                    
+                    <% if(user) { %>
+                        <!-- User i loguar - shfaq email -->
+                        <input type="hidden" name="email" value="<%= user.Email %>">
+                        <p style="color: #a0a0a0; margin-bottom: 10px;">Kyçuar si: <strong><%= user.Email %></strong></p>
+                    <% } else { %>
+                        <!-- User jo i loguar - pyeti per telefon -->
+                        <input type="tel" name="telefoni" placeholder="Numri i telefonit (për SMS me detajet e rezervimit)" required style="padding: 10px; margin-bottom: 10px; width: 100%; box-sizing: border-box;">
+                    <% } %>
+                    
+                    <button type="submit" class="btn-primary" style="width: 100%; border:none; padding:15px; cursor:pointer;">Konfirmo Rezervimin</button>
+                </form>
+            </div>
+        <% } else { %>
+            <p>Nuk ka shfaqje të planifikuara për këtë film.</p>
+        <% } %>
+    </div>
+
+    <script>
+        let selectedSeats = [];
+
+        function getHallPricingFromName(hallName) {
+            const name = String(hallName || '').toLowerCase();
+            if (name.includes('1')) return { regular: 6.0, vip: 9.0 };
+            if (name.includes('2')) return { regular: 5.0, vip: 6.5 };
+            if (name.includes('3')) return { regular: 5.5, vip: 7.5 };
+            if (name.includes('4') || name.includes('kids') || name.includes('femij') || name.includes('fëmij')) return { regular: 4.0, vip: 5.5 };
+            if (name.includes('5') || name.includes('3d')) return { regular: 5.8, vip: 7.2 };
+            return { regular: 5.5, vip: 7.5 };
+        }
+
+        function getCurrentPricing() {
+            const terminiSelect = document.getElementById('terminiSelect');
+            if (!terminiSelect || !terminiSelect.options || !terminiSelect.options.length) {
+                return { regular: 5.5, vip: 7.5 };
+            }
+            const selected = terminiSelect.options[terminiSelect.selectedIndex];
+            const hallName = selected ? selected.dataset.salla : '';
+            return getHallPricingFromName(hallName);
+        }
+
+        function updatePriceInfo() {
+            const pricing = getCurrentPricing();
+            const info = document.getElementById('pricePerSeatInfo');
+            if (info) {
+                const regular = pricing.regular.toLocaleString('sq-AL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\./g, ',');
+                const vip = pricing.vip.toLocaleString('sq-AL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\./g, ',');
+                info.textContent = 'Regular: ' + regular + ' € | VIP: ' + vip + ' €';
+            }
+        }
+
+        function calculatePrice() {
+            const pricing = getCurrentPricing();
+            let totalPrice = 0;
+            selectedSeats.forEach(seatId => {
+                const row = seatId.charAt(0);
+                if (row === 'E') {
+                    totalPrice += pricing.vip;
+                } else {
+                    totalPrice += pricing.regular;
+                }
+            });
+            
+            document.getElementById('totalPrice').textContent = totalPrice.toFixed(2) + ' €';
+            document.getElementById('totalPrice').textContent = totalPrice.toLocaleString('sq-AL', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).replace(/\./g, ',') + ' €';
+            
+            if (selectedSeats.length === 0) {
+                document.getElementById('selectedSeatsDisplay').textContent = 'Zgjidh ulëset';
+            } else {
+                document.getElementById('selectedSeatsDisplay').textContent = selectedSeats.join(', ');
+            }
+        }
+
+        function toggleSeat(el, row, num) {
+            if (el.classList.contains('occupied')) return;
+            el.classList.toggle('selected');
+            const seatId = String(row) + String(num);
+            if (el.classList.contains('selected')) {
+                selectedSeats.push(seatId);
+            } else {
+                selectedSeats = selectedSeats.filter(s => s !== seatId);
+            }
+            document.getElementById('selected_seats_input').value = selectedSeats.join(',');
+            calculatePrice();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const terminiSelect = document.getElementById('terminiSelect');
+            const shfaqjaInput = document.getElementById('shfaqja_id_input');
+            const seatStatusMessage = document.getElementById('seatStatusMessage');
+
+            const reservedMapData = document.getElementById('reservedMapData');
+            const reservedMap = reservedMapData && reservedMapData.dataset.json
+                ? JSON.parse(decodeURIComponent(reservedMapData.dataset.json))
+                : {};
+
+            function renderOccupied(shfaqjaId) {
+                const seats = document.querySelectorAll('.seats-container .seat');
+                seats.forEach(s => {
+                    s.classList.remove('occupied');
+                    s.classList.remove('selected');
+                });
+                selectedSeats = [];
+                document.getElementById('selected_seats_input').value = '';
+
+                const list = reservedMap[shfaqjaId] || [];
+                list.forEach(seatId => {
+                    const row = seatId.charAt(0);
+                    const num = seatId.slice(1);
+                    const selector = '.seat[data-row="' + row + '"][data-num="' + num + '"]';
+                    const el = document.querySelector(selector);
+                    if (el) el.classList.add('occupied');
+                });
+
+                // if all seats occupied, show message and disable submit
+                const totalSeats = (['A','B','C','D','E'].length) * 12;
+                if (list.length >= totalSeats) {
+                    seatStatusMessage.textContent = 'Salla është e zënë / mbyllur për këtë termin.';
+                    document.querySelector('form[action="/rezervo"] button[type="submit"]').disabled = true;
+                } else {
+                    seatStatusMessage.textContent = '';
+                    document.querySelector('form[action="/rezervo"] button[type="submit"]').disabled = false;
+                }
+            }
+
+            if (terminiSelect && shfaqjaInput) {
+                shfaqjaInput.value = terminiSelect.value;
+                renderOccupied(terminiSelect.value);
+                updatePriceInfo();
+                terminiSelect.addEventListener('change', () => {
+                    shfaqjaInput.value = terminiSelect.value;
+                    renderOccupied(terminiSelect.value);
+                    updatePriceInfo();
+                    calculatePrice();
+                });
+            }
+
+            document.querySelectorAll('.seats-container .seat').forEach(el => {
+                el.addEventListener('click', () => {
+                    if (el.classList.contains('occupied')) return;
+                    const row = el.dataset.row;
+                    const num = el.dataset.num;
+                    toggleSeat(el, row, num);
+                    // update hidden input after toggling
+                    document.getElementById('selected_seats_input').value = selectedSeats.join(',');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

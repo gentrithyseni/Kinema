@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <link rel="stylesheet" href="/style.css">
+    <title>Kategorite - Kinema AAB</title>
+    <style>
+        .kategorite-container { max-width: 1000px; margin: 40px auto; padding: 20px; }
+        .kategori-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; margin-top: 30px; }
+        .kategori-card { background: #1a1d24; border: 1px solid #e50914; border-radius: 10px; padding: 20px; text-align: center; cursor: pointer; transition: transform 0.3s; }
+        .kategori-card:hover { transform: translateY(-5px); background: #242830; }
+        .kategori-card h3 { color: #e50914; margin: 0; font-size: 24px; }
+        .kategori-card p { color: #a0a0a0; margin-top: 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">Kinema AAB</a>
+        <div class="nav-links"><a href="/">Kthehu te Filmat</a></div>
+    </header>
+
+    <div class="kategorite-container">
+        <h1 style="text-align: center; color: #e50914;">Kategoritë e Filmave</h1>
+        
+        <div id="kategoriGrid" class="kategori-grid">
+            <p>Ngarkimi i kategorive...</p>
+        </div>
+
+        <hr style="margin:30px 0; border-color:#2a2d34;" />
+        <h2 style="color:#e50914;">Filmat në kategorinë e zgjedhur</h2>
+        <div id="filmsGrid" class="kategori-grid"></div>
+    </div>
+
+    <script>
+        async function loadCategory(kat) {
+            const grid = document.getElementById('filmsGrid');
+            grid.innerHTML = '<p>Ngarkimi...</p>';
+            try {
+                const res = await fetch(`/api/kategori/${encodeURIComponent(kat)}`);
+                if (!res.ok) { grid.innerHTML = '<p>Gabim gjatë marrjes së filmave.</p>'; return; }
+                const films = await res.json();
+                if (!films || films.length === 0) { grid.innerHTML = '<p>Nuk u gjetën filma për këtë kategori.</p>'; return; }
+                grid.innerHTML = films.map(f => `
+                    <div style="background:#1a1d24; padding:16px; border-radius:8px; border:1px solid #2b2f36;">
+                        <img src="${f.PosterURL || '/placeholder.png'}" style="width:100%; height:140px; object-fit:cover; border-radius:6px;" />
+                        <h3 style="color:#ffc107; margin-top:8px;">${f.Titulli}</h3>
+                        <p style="color:#a0a0a0;">${f.Zhanri} • ${f.Kohezgjatja_Min || ''} min</p>
+                        <a href="/filmi/${f.ID}">Shiko detajet</a>
+                    </div>
+                `).join('');
+            } catch (e) { grid.innerHTML = '<p>Gabim gjatë kërkesës.</p>'; }
+        }
+
+        // Load categories dynamically from API
+        async function loadCategories() {
+            const grid = document.getElementById('kategoriGrid');
+            try {
+                const res = await fetch('/api/kategorit');
+                const cats = await res.json();
+                if (!cats || cats.length === 0) { grid.innerHTML = '<p>Nuk u gjetën kategori.</p>'; return; }
+                // Normalize display names (fix encoding issues like trailing '?') but keep raw value for API calls
+                function normalizeCat(name) {
+                    if (!name) return name;
+                    let s = String(name).trim();
+                    // Remove replacement characters and control characters
+                    s = s.replace(/\uFFFD/g, '');
+                    s = s.replace(/[\x00-\x1F\x7F]/g, '');
+                    // Common incorrect trailing/question-mark for ë — map Aventur* -> Aventure
+                    if (/^aventur/i.test(s)) return 'Aventure';
+                    // If it's plain 'drama' keep capitalized form
+                    if (/^drama$/i.test(s)) return 'Drama';
+                    return s;
+                }
+
+                grid.innerHTML = cats.map(c => {
+                    const raw = String(c).replace(/"/g, '&quot;');
+                    const disp = normalizeCat(c);
+                    return `<div class="kategori-card" data-kat="${raw}"><h3>🎬 ${disp}</h3><p>Shiko filma: ${disp}</p></div>`;
+                }).join('');
+
+                document.querySelectorAll('.kategori-card').forEach(el => el.addEventListener('click', () => loadCategory(el.dataset.kat)));
+            } catch (e) { grid.innerHTML = '<p>Gabim gjatë marrjes së kategorive.</p>'; }
+        }
+        loadCategories();
+    </script>
+</body>
+</html>

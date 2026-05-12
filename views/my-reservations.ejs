@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Rezervimet e Mia - Kinema AAB</title>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">Kinema AAB</a>
+        <div class="nav-links">
+            <a href="/kategorite">📂 Kategoritë</a>
+            <a href="/about">ℹ️ Si funksionon</a>
+            <a href="/sallat">🎬 Sallat</a>
+            <a href="/">Kthehu te Filmat</a>
+            <a href="/logout" class="btn-primary">Dil</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <h2 class="title-section">Rezervimet e Mia</h2>
+
+        <div class="stats-grid">
+            <div class="stat-card"><span>Gjithsej</span><strong><%= stats.total %></strong></div>
+            <div class="stat-card"><span>Aktive</span><strong><%= stats.aktive %></strong></div>
+            <div class="stat-card"><span>Anuluara</span><strong><%= stats.anuluara %></strong></div>
+        </div>
+
+        <% if (reservations && reservations.length > 0) { %>
+            <table class="table-dark">
+                <thead>
+                    <tr>
+                        <th>Filmi</th>
+                        <th>Salla</th>
+                        <th>Termin</th>
+                        <th>Ulësja</th>
+                        <th>Tipi</th>
+                        <th>Statusi</th>
+                        <th>Rezervuar më</th>
+                        <th>Veprimi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% reservations.forEach(r => { %>
+                        <tr>
+                            <td><%= r.Titulli %></td>
+                            <td><%= r.Emri_Salles %></td>
+                            <td><%= new Date(r.Data_Ora).toLocaleString('sq-AL', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) %></td>
+                            <td><strong style="color:#ffc107;"><%= r.Rreshti %><%= r.Numri_Karriges %></strong></td>
+                            <td><%= r.Tipi_Uleses %></td>
+                            <td><span class="status-badge <%= r.Statusi === 'Aktiv' ? 'badge-active' : 'badge-cancelled' %>"><%= r.Statusi %></span></td>
+                            <td><%= r.Data_Rezervimit ? new Date(r.Data_Rezervimit).toLocaleString('sq-AL', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-' %></td>
+                            <td>
+                                <% if (r.Statusi === 'Aktiv') { %>
+                                    <form action="/anulo-bilete/<%= r.ID %>" method="POST" style="margin:0;">
+                                        <button type="submit" class="btn-danger" style="border:none; cursor:pointer;" onclick="return confirm('A jeni i sigurt që doni ta anuloni këtë rezervim?')">Anulo</button>
+                                    </form>
+                                <% } else { %>
+                                    <span style="color:#a0a0a0;">-</span>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p style="color:#a0a0a0;">Nuk keni asnjë rezervim ende.</p>
+        <% } %>
+    </div>
+</body>
+</html>

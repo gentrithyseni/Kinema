@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/style.css">
+    <title>Paneli i Adminit</title>
+    <style>
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.7); }
+        .modal-content { background-color: #181b22; margin: auto; padding: 20px; border: 1px solid #e50914; width: 90%; max-width: 500px; margin-top: 5%; border-radius: 10px; }
+        .close { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close:hover { color: #e50914; }
+    </style>
+</head>
+<body>
+    <header class="admin-header">
+        <a href="/" class="logo logo-admin">KINEMA AAB <span class="admin-badge">Admin</span></a>
+        <div class="nav-links admin-nav-links">
+            <a href="/kategorite"> Kategoritë</a>
+            <a href="/about">ℹ️ Si funksionon</a>
+            <a href="/my-reservations">🎟 Rezervimet e mia</a>
+            <a href="/sallat">🎬 Sallat</a>
+            <form action="/search" method="GET" class="top-search">
+                <input type="search" name="q" placeholder="Kërko filma...">
+            </form>
+            <a href="/">Kthehu në Ballinë</a>
+            <a href="/logout" class="btn-primary">Dil</a>
+        </div>
+    </header>
+
+    <div class="admin-container">
+        <h2>Shto Film të Ri</h2>
+        <form action="/admin/shto-film" method="POST" style="margin-top: 20px; display: grid; gap: 15px;">
+            <input type="text" name="titulli" placeholder="Titulli i Filmit" required style="padding: 10px;">
+            <input type="text" name="zhanri" placeholder="Zhanri (psh. Aksion)" required style="padding: 10px;">
+            <input type="number" name="kohezgjatja" placeholder="Kohëzgjatja (Minuta)" required style="padding: 10px;">
+            <input type="text" name="poster" placeholder="Linku i Posterit (URL)" required style="padding: 10px;">
+            <textarea name="pershkrimi" placeholder="Përshkrimi i filmit..." required style="padding: 10px; height: 80px;"></textarea>
+            <button type="submit" class="btn-success">➕ Shto Filmin</button>
+        </form>
+
+        <h2 style="margin-top: 40px;">Shto Shfaqje (Orare)</h2>
+        <form action="/admin/shto-shfaqje" method="POST" style="margin-top: 20px; display: grid; gap: 15px;">
+            <select name="filmi_id" required style="padding: 10px; background: #0f1115; color: white; border: 1px solid #e50914;">
+                <option value="">-- Zgjedhni Filmin --</option>
+                <% if (typeof filmatPerShfaqje !== 'undefined' && filmatPerShfaqje.length > 0) { %>
+                    <% filmatPerShfaqje.forEach(f => { %>
+                        <option value="<%= f.ID %>"><%= f.Titulli %></option>
+                    <% }); %>
+                <% } %>
+            </select>
+            <select name="salla_id" required style="padding: 10px; background: #0f1115; color: white; border: 1px solid #e50914;">
+                <option value="">-- Zgjedhni Sallën --</option>
+                <% if (typeof sallat !== 'undefined' && sallat.length > 0) { %>
+                    <% sallat.forEach(s => { %>
+                        <option value="<%= s.ID %>"><%= s.Emri_Salles %></option>
+                    <% }); %>
+                <% } %>
+            </select>
+            <div style="display:grid; gap:10px;">
+                <input type="date" name="data_date" required style="padding: 10px; background: #0f1115; color: white; border: 1px solid #e50914;">
+                <input type="time" name="data_time" required step="60" style="padding: 10px; background: #0f1115; color: white; border: 1px solid #e50914;">
+            </div>
+            <p style="color:#a0a0a0; margin: 0; font-size: 13px;">Shfaqjet llogariten me orar 24H. Salla lirohet vetëm pas përfundimit të filmit + 1 orë pastrim.</p>
+            <button type="submit" class="btn-success">➕ Shto Shfaqjen</button>
+        </form>
+
+        <div class="stats-grid">
+            <div class="stat-card"><span>Filma</span><strong><%= stats.FilmatTotal || 0 %></strong></div>
+            <div class="stat-card"><span>Shfaqje</span><strong><%= stats.ShfaqjetTotal || 0 %></strong></div>
+            <div class="stat-card"><span>Aktive</span><strong><%= stats.RezervimetAktive || 0 %></strong></div>
+            <div class="stat-card"><span>Anuluara</span><strong><%= stats.RezervimetAnuluara || 0 %></strong></div>
+        </div>
+
+        <form method="GET" action="/admin" class="filter-bar">
+            <div class="filter-field">
+                <label for="status">Statusi</label>
+                <select name="status" id="status">
+                    <option value="Aktiv" <%= (filters && filters.status === 'Aktiv') ? 'selected' : '' %>>Aktiv</option>
+                    <option value="Anuluar" <%= (filters && filters.status === 'Anuluar') ? 'selected' : '' %>>Anuluar</option>
+                    <option value="all" <%= (filters && filters.status === 'all') ? 'selected' : '' %>>Të gjitha</option>
+                </select>
+            </div>
+            <div class="filter-field">
+                <label for="q">Kërko</label>
+                <input type="text" name="q" id="q" value="<%= (filters && filters.q) || '' %>" placeholder="Titulli ose salla">
+            </div>
+            <div class="filter-field">
+                <label for="date">Data</label>
+                <input type="date" name="date" id="date" value="<%= (filters && filters.date) || '' %>">
+            </div>
+            <div class="filter-field filter-actions">
+                <button type="submit" class="btn-success">Filtro</button>
+                <a href="/admin" class="btn-warning" style="text-decoration:none; display:inline-block;">Pastro</a>
+            </div>
+        </form>
+
+        <h2 style="margin-top: 40px;">Filmat Aktualë (Fshi)</h2>
+        <table class="table-dark">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Titulli</th>
+                    <th>Zhanri</th>
+                    <th>Veprimi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% filmat.forEach(f => { %>
+                    <tr>
+                        <td><%= f.ID %></td>
+                        <td><%= f.Titulli %></td>
+                        <td><%= f.Zhanri %></td>
+                        <td>
+                            <button class="btn-warning edit-btn"
+                                data-id="<%= f.ID %>"
+                                data-titulli="<%= (f.Titulli || '').replace(/\"/g, '&quot;') %>"
+                                data-zhanri="<%= (f.Zhanri || '').replace(/\"/g, '&quot;') %>"
+                                data-kohezgjatja="<%= f.Kohezgjatja_Min %>"
+                                data-poster="<%= (f.PosterURL || '').replace(/\"/g, '&quot;') %>"
+                                data-pershkrimi="<%= (f.Pershkrimi || '').replace(/\"/g, '&quot;') %>">
+                                Ndrysho
+                            </button>
+                            <form action="/admin/fshi-film/<%= f.ID %>" method="POST" style="display:inline;">
+                                <button type="submit" class="btn-danger" style="border:none; cursor:pointer;" onclick="return confirm('A jeni i sigurt që doni ta fshini këtë film?')">Fshi</button>
+                            </form>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+
+        <h2 style="margin-top: 40px;">Shfaqjet Aktualë</h2>
+        <% if (typeof shfaqjet !== 'undefined' && shfaqjet.length > 0) { %>
+            <table class="table-dark">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Filmi</th>
+                        <th>Salla</th>
+                        <th>Data / Ora</th>
+                        <th>Veprimi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% shfaqjet.forEach(s => { %>
+                        <tr>
+                            <td><%= s.ID %></td>
+                            <td><%= s.Titulli %></td>
+                            <td><%= s.Emri_Salles %></td>
+                            <td><%= new Date(s.Data_Ora).toLocaleString('sq-AL', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) %></td>
+                            <td>
+                                <form action="/admin/fshi-shfaqje/<%= s.ID %>" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn-danger" style="border:none; cursor:pointer;" onclick="return confirm('A jeni i sigurt që doni ta fshini këtë shfaqje?')">Fshi</button>
+                                </form>
+                            </td>
+                        </tr>
+                    <% }); %>
+                </tbody>
+            </table>
+        <% } else { %>
+            <p style="margin-top: 20px; color: #a0a0a0;">Nuk ka shfaqje të regjistruara në këtë moment.</p>
+        <% } %>
+
+        <h2 style="margin-top: 40px;">Rezervimet dhe Historia</h2>
+        <% if (rezervimet && rezervimet.length > 0) { %>
+        <table class="table-dark">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Filmi</th>
+                    <th>Salla</th>
+                    <th>Termin</th>
+                    <th>Ulësja</th>
+                    <th>Tipi</th>
+                    <th>Statusi</th>
+                    <th>Rezervuar më</th>
+                    <th>Veprimi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% rezervimet.forEach(r => { %>
+                    <tr>
+                        <td><%= r.ID %></td>
+                        <td><%= r.Titulli %></td>
+                        <td><%= r.Emri_Salles %></td>
+                        <td><%= new Date(r.Data_Ora).toLocaleString('sq-AL', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) %></td>
+                        <td><strong style="color: #ffc107;"><%= r.Rreshti %><%= r.Numri_Karriges %></strong></td>
+                        <td><%= r.Tipi_Uleses %></td>
+                        <td>
+                            <span class="status-badge <%= r.Statusi === 'Aktiv' ? 'badge-active' : 'badge-cancelled' %>"><%= r.Statusi %></span>
+                        </td>
+                        <td><%= r.Data_Rezervimit ? new Date(r.Data_Rezervimit).toLocaleString('sq-AL', { hour12: false, year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' }) : '-' %></td>
+                        <td>
+                            <% if (r.Statusi === 'Aktiv') { %>
+                                <form action="/admin/anulo-rezervim/<%= r.ID %>" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn-danger" style="border:none; cursor:pointer;" onclick="return confirm('A jeni i sigurt që doni ta anuloni këtë rezervim?')">Anulo</button>
+                                </form>
+                            <% } else { %>
+                                <span style="color:#a0a0a0;">-</span>
+                            <% } %>
+                        </td>
+                    </tr>
+                <% }) %>
+            </tbody>
+        </table>
+        <% } else { %>
+            <p style="margin-top: 20px; color: #a0a0a0;">Nuk ka rezervime aktive në këtë moment.</p>
+        <% } %>
+    </div>
+
+    <!-- Modal për Ndrysho Filmin -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2>Ndrysho Filmin</h2>
+            <form action="/admin/ndrysho-film" method="POST" style="display: grid; gap: 15px; margin-top: 20px;">
+                <input type="hidden" name="film_id" id="film_id">
+                <input type="text" name="titulli" id="titulli" placeholder="Titulli i Filmit" required style="padding: 10px;">
+                <input type="text" name="zhanri" id="zhanri" placeholder="Zhanri" required style="padding: 10px;">
+                <input type="number" name="kohezgjatja" id="kohezgjatja" placeholder="Kohëzgjatja (Minuta)" required style="padding: 10px;">
+                <input type="text" name="poster" id="poster" placeholder="Linku i Posterit (URL)" required style="padding: 10px;">
+                <textarea name="pershkrimi" id="pershkrimi" placeholder="Përshkrimi i filmit..." required style="padding: 10px; height: 80px;"></textarea>
+                <button type="submit" class="btn-success">💾 Ruaj Ndryshimet</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openEditModal(id, titulli, zhanri, kohezgjatja, poster, pershkrimi) {
+            document.getElementById('film_id').value = id;
+            document.getElementById('titulli').value = titulli;
+            document.getElementById('zhanri').value = zhanri;
+            document.getElementById('kohezgjatja').value = kohezgjatja;
+            document.getElementById('poster').value = poster;
+            document.getElementById('pershkrimi').value = pershkrimi;
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const d = btn.dataset;
+                    openEditModal(d.id, d.titulli, d.zhanri, d.kohezgjatja, d.poster, d.pershkrimi);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

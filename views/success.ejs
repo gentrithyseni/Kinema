@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/style.css">
+    <title>Rezervimi u krye</title>
+    <style>
+        .success-container { max-width: 600px; margin: 100px auto; padding: 40px; background: linear-gradient(180deg, #181b22 0%, #12151b 100%); border-radius: 14px; box-shadow: 0 20px 50px rgba(0,0,0,0.45); border: 1px solid rgba(229, 9, 20, 0.25); text-align: center; }
+        .success-container h1 { color: #e50914; margin-bottom: 20px; font-size: 32px; }
+        .success-container p { color: #e8e8e8; margin-bottom: 30px; line-height: 1.6; font-size: 16px; }
+        .reservation-details { background: rgba(14, 17, 21, 0.5); padding: 20px; border-radius: 8px; margin: 30px 0; border-left: 3px solid #e50914; }
+        .reservation-details h3 { color: #ffc107; margin-bottom: 15px; }
+        .reservation-details p { text-align: left; margin: 8px 0; color: #d0d0d0; }
+        .action-buttons { display: flex; gap: 15px; justify-content: center; margin-top: 30px; flex-wrap: wrap; }
+        .btn-back { background-color: #2a2d34; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; border: 1px solid #3a3d44; cursor: pointer; font-size: 14px; transition: 0.3s; }
+        .btn-back:hover { background-color: #404349; border-color: #5a5d64; }
+        .btn-cancel { background-color: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; border: none; cursor: pointer; font-size: 14px; transition: 0.3s; }
+        .btn-cancel:hover { background-color: #c82333; }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">Kinema AAB</a>
+        <div class="nav-links">
+            <a href="/">Kthehu te Filmat</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="success-container">
+            <h1>✓ Rezervimi u krye me sukses!</h1>
+            <p>Detajet e rezervimit janë dërguar në:</p>
+            <p style="font-weight: 600; font-size: 18px; color: #ffc107;"><%= kontakti %></p>
+
+            <div class="reservation-details">
+                <h3>📋 Detajet e Rezervimit</h3>
+                <p><strong>Filmi:</strong> <%= filmi %></p>
+                <p><strong>Salla:</strong> <%= salla %></p>
+                <p><strong>Termin:</strong> <%= termin %></p>
+                <p><strong>Ulëset:</strong> <span style="color: #ffc107; font-weight: 600;"><%= uleset %></span></p>
+                <p><strong>Gjithsej:</strong> <span style="color: #e50914; font-weight: 600;"><%= parseFloat(cmimi).toFixed(2) %> €</span></p>
+            </div>
+
+            <p style="color: #a0a0a0; font-size: 14px;">ID Rezervimi: <strong style="color: #fff;"><%= rezervimiID %></strong></p>
+
+            <div class="action-buttons">
+                <a href="/" class="btn-back">← Kthehu në Ballinë</a>
+                <% if (allowCancel) { %>
+                    <form action="/anulo-bilete/<%= rezervimiID %>" method="POST" style="margin: 0;">
+                        <button type="submit" class="btn-cancel" onclick="return confirm('A jeni i sigurt që doni ta anuloni këtë rezervim? Ulëset do të bëhen të lira.')">🗑 Anulo Biletat</button>
+                    </form>
+                <% } else { %>
+                    <span style="color:#a0a0a0; align-self:center;">Për anulim, kyçu me llogarinë tënde.</span>
+                <% } %>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

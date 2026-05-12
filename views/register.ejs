@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <link rel="stylesheet" href="/style.css">
+    <title>Regjistrohuni - Kinema AAB</title>
+</head>
+<body>
+    <header><a href="/" class="logo">Kinema AAB</a></header>
+    
+    <div class="login-box">
+        <h2>Regjistrohuni</h2>
+        <form action="/register" method="POST">
+            <div class="form-group">
+                <label>Emri Plotë</label>
+                <input type="text" name="emri" required placeholder="Emri juaj" maxlength="100">
+            </div>
+            <div class="form-group">
+                <label>Email Adresa</label>
+                <input type="email" name="email" required placeholder="shembull@email.com" maxlength="100">
+            </div>
+            <div class="form-group">
+                <label>Numri i Telefonit</label>
+                <input type="tel" name="telefoni" required placeholder="+383 (49) XXX-XXXX" maxlength="20">
+            </div>
+            <div class="form-group">
+                <label>Fjalëkalimi</label>
+                <input type="password" name="fjalekalimi" required placeholder="Minimumat 6 karaktere" minlength="6">
+            </div>
+            <div class="form-group">
+                <label>Ripëtoni Fjalëkalimin</label>
+                <input type="password" name="fjalekalimi_confirm" required placeholder="Ripëtoni fjalëkalimin" minlength="6">
+            </div>
+            <button type="submit" class="btn-rezervo" style="border:none; cursor:pointer;">Regjistrohuni</button>
+        </form>
+        <p style="margin-top: 15px;">Tashmë keni llogari? <a href="/login" style="color: #e50914;">Kyçuni këtu</a></p>
+    </div>
+</body>
+</html>
